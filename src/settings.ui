@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>settings</class>
+ <widget class="QDockWidget" name="settings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Ubuntu</family>
+    <weight>50</weight>
+    <bold>false</bold>
+   </font>
+  </property>
+  <property name="floating">
+   <bool>true</bool>
+  </property>
+  <property name="features">
+   <set>QDockWidget::DockWidgetClosable</set>
+  </property>
+  <property name="windowTitle">
+   <string>                                                                                                                                                    umbra | config</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>9</y>
+      <width>621</width>
+      <height>441</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>621</width>
+       <height>441</height>
+      </rect>
+     </property>
+     <widget class="QLineEdit" name="displayNameBox">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>5</y>
+        <width>113</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>displayname</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>10</y>
+        <width>96</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>Display Name</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>35</y>
+        <width>96</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>Theme Color</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="themeColorBox">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>30</y>
+        <width>113</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>#c63333</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>60</y>
+        <width>96</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>Display Pic</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="displayImgBox">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>55</y>
+        <width>113</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>shhdir/images/pepe.jpg</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>85</y>
+        <width>96</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>Listen Port</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="listenPortBox">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>80</y>
+        <width>113</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string>0000</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>110</y>
+        <width>96</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>NanumGothic</family>
+       </font>
+      </property>
+      <property name="text">
+       <string>Privacy Level</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="privacyLevel">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>105</y>
+        <width>48</width>
+        <height>25</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="previewButton">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>30</y>
+        <width>70</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>preview</string>
+      </property>
+     </widget>
+     <widget class="Line" name="colorBox">
+      <property name="geometry">
+       <rect>
+        <x>295</x>
+        <y>30</y>
+        <width>25</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #c63333</string>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="lineWidth">
+       <number>25</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="cancelButton">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>415</y>
+        <width>80</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Cancel</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveButton">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>415</y>
+        <width>80</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
