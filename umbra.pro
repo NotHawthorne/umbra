@@ -10,6 +10,7 @@ QT       += core gui
 QT       += network
 CONFIG   += openssl
 CONFIG   += c++11
+CONFIG   += static
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -159,7 +160,8 @@ SOURCES += src/main.cpp\
     cryptocpp/filters.cpp \
     src/messenger.cpp \
     src/umbra.cpp \
-    src/settings.cpp
+    src/settings.cpp \
+    src/profile.cpp
 
 HEADERS  += \
     src/crypto.h \
@@ -302,12 +304,14 @@ HEADERS  += \
     src/messenger.h \
     src/umbra.h \
     src/settings.h \
-    src/constructors.h
+    src/constructors.h \
+    src/profile.h
 
 FORMS    += \
     src/messenger.ui \
     src/umbra.ui \
-    src/settings.ui
+    src/settings.ui \
+    src/profile.ui
 
 RESOURCES +=
 

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>profile</class>
+ <widget class="QDockWidget" name="profile">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>640</height>
+   </rect>
+  </property>
+  <property name="floating">
+   <bool>true</bool>
+  </property>
+  <property name="features">
+   <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable</set>
+  </property>
+  <property name="windowTitle">
+   <string>                                                                                                                                                   umbra | profile</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <widget class="QFrame" name="profileFrame">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>120</width>
+      <height>120</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="lineWidth">
+     <number>2</number>
+    </property>
+    <property name="midLineWidth">
+     <number>2</number>
+    </property>
+    <widget class="QGraphicsView" name="profileImage">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>120</width>
+       <height>120</height>
+      </rect>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+    </widget>
+   </widget>
+   <widget class="Line" name="nameplate">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>120</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #c63333</string>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth">
+     <number>26</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="displayname">
+    <property name="geometry">
+     <rect>
+      <x>18</x>
+      <y>136</y>
+      <width>105</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>NanumGothic</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: #eee;</string>
+    </property>
+    <property name="text">
+     <string>Name</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QFrame" name="basicInfoFrame">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>10</y>
+      <width>251</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QLabel" name="title">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>5</y>
+       <width>231</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>NanumGothic</family>
+      </font>
+     </property>
+     <property name="text">
+      <string>Basic Info</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="frame_2">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>10</y>
+      <width>231</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>5</y>
+       <width>211</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>NanumGothic</family>
+      </font>
+     </property>
+     <property name="text">
+      <string>Pictures?</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>160</y>
+      <width>621</width>
+      <height>441</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>619</width>
+       <height>439</height>
+      </rect>
+     </property>
+     <widget class="QWidget" name="verticalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>-1</y>
+        <width>601</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="postFeed"/>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

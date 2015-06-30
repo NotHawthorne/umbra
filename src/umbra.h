@@ -13,6 +13,7 @@
 #include <ctime>
 #include "messenger.h"
 #include "settings.h"
+#include "profile.h"
 
 class QUdpSocket;
 
@@ -91,26 +92,28 @@ private slots:
     void processPendingMessages();
     void openSettings();
     void saveSettings();
+    void openProfile();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent* event)
     {
-        QMainWindow::showEvent(event);
+        /*QMainWindow::showEvent(event);
         QPixmap pixmap(size());
         pixmap.fill(Qt::transparent);
         QPainter::setRedirected(this, &pixmap);
         QPaintEvent pe(rect());
         paintEvent(&pe);
         QPainter::restoreRedirected(this);
-        setMask(pixmap.mask());
+        setMask(pixmap.mask());*/
     }
 
 private:
     Ui::meshh   *ui;
     messenger    m;
     settings     s;
+    profile      p;
     QUdpSocket  *udpSocket;
     QPoint       dragPosition;
     friendInfo   p_friend;

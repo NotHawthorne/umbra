@@ -68,6 +68,7 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     connect(ui->confirmFriendButton, SIGNAL(clicked()), this, SLOT(reqFriend()));
     connect(this->m.ui->pushButton, SIGNAL(clicked()), this, SLOT(sendMsg()));
     connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
+    connect(ui->profileButton, SIGNAL(clicked()), this, SLOT(openProfile()));
     haveKey();
 }
 
@@ -706,6 +707,10 @@ void meshh::openSettings() {
     this->s.show();
     this->s.move(QCursor::pos());
     connect(this->s.ui->saveButton, SIGNAL(clicked()), this, SLOT(saveSettings()));
+}
+
+void meshh::openProfile() {
+    this->p.show();
 }
 
 void meshh::saveSettings() {
