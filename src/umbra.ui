@@ -1278,6 +1278,9 @@ h3 {
        <family>NanumGothic</family>
       </font>
      </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::NoContextMenu</enum>
+     </property>
      <property name="styleSheet">
       <string notr="true">color: #eee;</string>
      </property>

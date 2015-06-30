@@ -18,15 +18,13 @@ profile::~profile()
     delete ui;
 }
 
-void profile::mousePressEvent(QMouseEvent *event)
-{
+void profile::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         dragPosition = event->globalPos() - frameGeometry().topLeft();
         event->accept();
     }
 }
-void profile::mouseMoveEvent(QMouseEvent *event)
-{
+void profile::mouseMoveEvent(QMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
         move(event->globalPos() - dragPosition);
         event->accept();

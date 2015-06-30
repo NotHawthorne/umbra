@@ -4,6 +4,8 @@
 #include <QtMultimedia/QSoundEffect>
 #include <QSignalMapper>
 
+#include "profile.h"
+#include "ui_profile.h"
 #include "settings.h"
 #include "ui_settings.h"
 #include "messenger.h"
@@ -710,6 +712,11 @@ void meshh::openSettings() {
 }
 
 void meshh::openProfile() {
+    this->p.ui->displayname->setText(this->conf->displayName);
+    QString ss;
+    ss.append("color: ");
+    ss.append(this->conf->themeColor);
+    this->p.ui->nameplate->setStyleSheet(ss);
     this->p.show();
 }
 

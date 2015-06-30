@@ -41,6 +41,19 @@ public:
     friendInfo (QString, QString, QString, QString, bool);
 };
 
+class profileInfo {
+public:
+    QString firstname, lastname, country, state, city, occupation, email;
+    std::vector<QString> p_occupations, imusers, links;
+    int age, birthyear, birthmonth, birthday;
+
+public:
+    profileInfo ();
+    profileInfo (friendInfo);
+    profileInfo (QString);
+    profileInfo (QHostAddress);
+};
+
 class umbraConfig {
 public:
     QString displayName, displayImg, themeColor;
@@ -123,6 +136,7 @@ private:
 
     std::vector<newsPost>     *posts;
     std::vector<friendInfo>   *friends;
+    std::vector<profileInfo>  *profiles;
     std::vector<QString>      *privatekeys;
     std::vector<QString>      *msgsPending;
     std::vector<QHostAddress> *conversessions;
