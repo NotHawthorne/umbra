@@ -138,6 +138,17 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
+    <widget class="QWidget" name="verticalLayoutWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>9</x>
+       <y>29</y>
+       <width>231</width>
+       <height>81</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="infoLayout"/>
+    </widget>
    </widget>
    <widget class="QFrame" name="frame_2">
     <property name="geometry">

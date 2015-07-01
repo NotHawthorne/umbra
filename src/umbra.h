@@ -43,9 +43,10 @@ public:
 
 class profileInfo {
 public:
-    QString firstname, lastname, country, state, city, occupation, email;
-    std::vector<QString> p_occupations, imusers, links;
+    QString firstname, lastname, country, state, city, occupation, email, education;
+    std::vector<QString> *p_occupations,*imusers, *links;
     int age, birthyear, birthmonth, birthday;
+    friendInfo inf;
 
 public:
     profileInfo ();
@@ -106,6 +107,12 @@ private slots:
     void openSettings();
     void saveSettings();
     void openProfile();
+    void sendPicture(QString path, friendInfo);
+    void processTcpData();
+    void newTcpConnection();
+    void loadProfile(profileInfo inf);
+    void loadMyProfile();
+    void addInfo(QString cat, QString inf);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -127,12 +134,16 @@ private:
     messenger    m;
     settings     s;
     profile      p;
+    QByteArray  *tcpData;
     QUdpSocket  *udpSocket;
+    QTcpSocket  *tcpSocket;
     QPoint       dragPosition;
     friendInfo   p_friend;
     umbraConfig *conf;
     int          onlineFriends;
     bool         debug;
+    QString     *pndimgsz;
+    profileInfo *myInfo;
 
     std::vector<newsPost>     *posts;
     std::vector<friendInfo>   *friends;
