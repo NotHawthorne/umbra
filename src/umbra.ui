@@ -725,21 +725,26 @@ h3 {
      <widget class="QWidget" name="verticalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>19</x>
+        <x>39</x>
         <y>-1</y>
-        <width>771</width>
+        <width>751</width>
         <height>111</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">
-        <number>6</number>
+        <number>0</number>
        </property>
        <property name="sizeConstraint">
         <enum>QLayout::SetNoConstraint</enum>
        </property>
+       <property name="leftMargin">
+        <number>4</number>
+       </property>
       </layout>
      </widget>
+     <zorder>verticalLayoutWidget</zorder>
+     <zorder>friendsFrame</zorder>
     </widget>
    </widget>
    <widget class="Line" name="line_5">

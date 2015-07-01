@@ -28,6 +28,7 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     this->conf->themeColor = tmpconf.themeColor;
 
     updateColor();
+    this->loadMyProfile();
 
     this->posts = new std::vector<newsPost>;
     this->friends = new std::vector<friendInfo>;
@@ -81,7 +82,6 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     connect(ui->profileButton, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
     connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(openProfile(QString)));
     haveKey();
-    this->loadMyProfile();
 }
 
 meshh::~meshh() { delete ui; }
@@ -258,6 +258,51 @@ void meshh::processPendingDatagrams()
             if (!found)
                 this->alert("Unauthorized user requested access to your profile. (" + host.toString() + ")", "red");
         }
+        if (recv.section(":", 0, 0) == "0x07") {
+            bool found = false;
+            for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); it++) {
+                profileInfo tmp = *it;
+                if (tmp.inf.username == findFriend(host).username) {
+                    QStringList split = recv.split(";");
+                    foreach (const QString &str, split) {
+                        if (str.section("=", 0, 0)=="AGE")
+                            tmp.age = str.section("=", 1, 1).toUInt();
+                        if (str.section("=", 0, 0)=="CITY")
+                            tmp.city = str.section("=", 1, 1);
+                        if (str.section("=", 0, 0)=="STATE")
+                            tmp.state = str.section("=", 1, 1);
+                        if (str.section("=", 0, 0)=="OCC")
+                            tmp.occupation = str.section("=", 1, 1);
+                        if (str.section("=", 0, 0)=="EMAIL")
+                            tmp.email = str.section("=", 1, 1);
+                        if (str.section("=", 0, 0)=="TCODE")
+                            tmp.themecode = str.section("=", 1, 1);
+                    }
+                    found = true;
+                }
+                *it = tmp;
+            }
+            if (!found) {
+                profileInfo *info = new profileInfo();
+                info->inf = findFriend(host);
+                QStringList split = recv.split(";");
+                foreach (const QString &str, split) {
+                    if (str.section("=", 0, 0)=="AGE")
+                        info->age = str.section("=", 1, 1).toUInt();
+                    if (str.section("=", 0, 0)=="CITY")
+                        info->city = str.section("=", 1, 1);
+                    if (str.section("=", 0, 0)=="STATE")
+                        info->state = str.section("=", 1, 1);
+                    if (str.section("=", 0, 0)=="OCC")
+                        info->occupation = str.section("=", 1, 1);
+                    if (str.section("=", 0, 0)=="EMAIL")
+                        info->email = str.section("=", 1, 1);
+                    if (str.section("=", 0, 0)=="TCODE")
+                        info->themecode = str.section("=", 1, 1);
+                }
+                this->profiles->push_back(*info);
+            }
+        }
         //else { QString temp("Unhandled datagram received: "); temp.append(datagram.data()); this->alert(temp, "red"); }
     }
 }
@@ -286,9 +331,16 @@ void meshh::processTcpData() {
     info->inf = *newfrnd;
     bool found = false;
     for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
-        profileInfo ptmp = *it;
-        if (ptmp.inf.username == tmp.username)
-            found = true;
+        if (!found) {
+            profileInfo ptmp = *it;
+            if (ptmp.inf.username == tmp.username) {
+                if (ptmp.avatar == "") {
+                    ptmp.avatar = fname;
+                    found = true;
+                    *it = ptmp;
+                }
+            }
+        }
     }
     if (!found)
         this->profiles->push_back(*info);
@@ -311,6 +363,7 @@ void meshh::sendPicture(QString path, friendInfo inf) {
     out.device()->seek(0);
     out << buffer.size();
     tcpSocket->write(buffer);
+    this->sendProfile(inf.IP, inf.portnum);
 }
 
 void meshh::requestProfile(QString uname) {
@@ -437,6 +490,9 @@ void meshh::hiFriends() {
 
 void meshh::sendMsg() {
     if (this->m.ui->messageBox->toPlainText() != "") {
+        std::string plaintext = this->m.ui->messageBox->toPlainText().toStdString();
+        std::string ciphertext;
+
         friendInfo tmp = findFriend(this->m.ui->displayName1->text());
         QString s0;
         QString s1;
@@ -444,6 +500,28 @@ void meshh::sendMsg() {
         s0.append("0x05:");
         s0.append(this->m.ui->messageBox->toPlainText());
         datagram.append(s0);
+
+        // // CRYPTO TESTING // // // // // // // //
+
+        byte key[CryptoPP::AES::DEFAULT_KEYLENGTH], iv[CryptoPP::AES::BLOCKSIZE];
+        memset(key, 0x00, CryptoPP::AES::DEFAULT_KEYLENGTH);
+        memset(iv, 0x00, CryptoPP::AES::BLOCKSIZE);
+
+        CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
+        CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption(aesEncryption, iv);
+
+        CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::StringSink(ciphertext));
+        stfEncryptor.Put( reinterpret_cast<const unsigned char*>(datagram.data()), datagram.size());
+        stfEncryptor.MessageEnd();
+
+        QFile outfile;
+        outfile.setFileName("ciphertext.shh");
+        outfile.open(QIODevice::WriteOnly);
+        outfile.write(ciphertext.c_str(), qstrlen(ciphertext.c_str()));
+        outfile.close();
+
+        // // CRYPTO TESTING // // // // // // // //
+
         udpSocket->writeDatagram(datagram.data(), datagram.size(), tmp.IP, tmp.portnum);
         s1.append(this->conf->displayName);
         s1.append(": ");
@@ -463,8 +541,7 @@ void meshh::newMessageSession(QString str) {
         this->conversessions->push_back(tmp.IP);
 
     this->m.ui->displayName1->setText(str);
-    this->m.ui->NameBar1->resize((this->m.ui->NameBar1->width() + ((11*str.length())-55)), this->m.ui->NameBar1->height());
-    this->m.ui->NameBar1->move((this->m.ui->NameBar1->x() - ((11*str.length())-55)), this->m.ui->NameBar1->y());
+    this->m.ui->displayName1->adjustSize();
     QSignalMapper *signalMapper = new QSignalMapper(this);
     signalMapper->setMapping(this->m.ui->displayName1, QString(this->m.ui->displayName1->text()));
     connect(this->m.ui->displayName1, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
@@ -671,32 +748,86 @@ void meshh::requestStream() {
     }
     std::random_shuffle(this->posts->begin(), this->posts->end());
     for (std::vector<newsPost>::iterator it = this->posts->begin(); it != this->posts->end(); ++it) {
-        newsPost curpost = *it;
-        QString outstr;
-        if (curpost.filename == NULL){
-            outstr.append(curpost.username);
-            outstr.append(" posted on ");
-            outstr.append(curpost.date);
-            outstr.append("\n");
-            outstr.append(curpost.txt);
-            this->recvPost(outstr);
-        }
-        else {
-            //handle picture posts
-        }
+        recvPost(*it);
     }
     ui->newPosts->setText("0");
 }
 
-void meshh::recvPost(QString str) {
+void meshh::recvPost(newsPost postdata) {
+    profileInfo pinf;
+    if (postdata.username != this->conf->displayName) {
+        pinf = findInfo(postdata.username);
+    }
+    else { pinf = *this->myInfo; }
+
+    //HEADER
+    QWidget *header = new QWidget;
+    QWidget *out = new QWidget;
+    out->setStyleSheet("border-style: solid; border-width: 1px; border-color: #9F94A7;");
+
+    //AVATAR THUMB
+    QHBoxLayout *hl = new QHBoxLayout;
+    QFrame *picframe = new QFrame;
+    QGraphicsView* w = new QGraphicsView();
+    QGraphicsScene* scene = new QGraphicsScene(w);
+    QPixmap pix(pinf.avatar);
+    QPixmap pix2 = pix.scaled(64,64);
+    picframe->setFrameRect(QRect(0,0,74,74));
+    scene->setSceneRect(0,0,64,64);
+    w->setScene(scene);
+    w->setFixedSize(74, 74);
+    scene->addPixmap(pix2);
+    hl->setContentsMargins(0,0,0,0);
+    w->setStyleSheet("border-width: 0px;");
+    hl->addWidget(w, 0, Qt::AlignTop);
+
+    //NAME+DATE BUTTON
+    QVBoxLayout *l_postinfo = new QVBoxLayout;
+    QWidget *postinfo = new QWidget;
+    QPushButton *btn = new QPushButton;
+    btn->setFlat(true);
+    if (pinf.lastname != "")
+        btn->setText(pinf.firstname + " " + pinf.lastname);
+    if (pinf.firstname == "")
+        btn->setText(postdata.username);
+    btn->setStyleSheet("QPushButton{text-align: left; border-width: 0px;} QPushButton:hover{ color: #ddd; }");
+    l_postinfo->addWidget(btn, 0, Qt::AlignLeft);
+    QLabel *datestamp = new QLabel;
+    datestamp->setStyleSheet("font-family:ubuntu; font-size:11px; font-style:light; border-width: 0px;");
+    datestamp->setText("posted on " + postdata.date);
+    l_postinfo->addWidget(datestamp, 0, Qt::AlignLeft);
+    l_postinfo->setSpacing(0);
+    l_postinfo->setMargin(0);
+    postinfo->setLayout(l_postinfo);
+    postinfo->setStyleSheet("border-width: 0px;");
+    postinfo->setMaximumHeight(35);
+    hl->addWidget(postinfo, 0, Qt::AlignVCenter);
+
+    //CONSTRUCT HEADER
+    hl->setSpacing(0);
+    hl->setMargin(0);
+    header->setLayout(hl);
+    header->setStyleSheet("background-color: #bbb; border-width: 0px;");
+
+    //POST TEXT
     QLabel *lbl = new QLabel;
     lbl->setWordWrap(true);
     lbl->setFixedHeight(100);
-    lbl->setText(str);
+    lbl->setText(postdata.txt);
     lbl->setAlignment(Qt::AlignTop);
     lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    lbl->setStyleSheet("background-color: #bbb; padding:5px;");
-    ui->verticalLayout->addWidget(lbl, 0, Qt::AlignTop);
+    lbl->setStyleSheet("background-color: #bbb; padding:5px; border-width: 0px;");
+
+    //BUILD FINAL LAYOUT
+    QVBoxLayout *outvlo = new QVBoxLayout;
+    outvlo->addWidget(header, 0, Qt::AlignTop);
+    outvlo->addWidget(lbl, 0, Qt::AlignTop);
+
+    //APPLY TO OUTWIDGET
+    out->setLayout(outvlo);
+
+    //OUT
+    ui->verticalLayout->addWidget(out, 0, Qt::AlignTop);
 }
 
 void meshh::revealPostFrame() {
@@ -770,7 +901,6 @@ void meshh::updateColor() {
     ui->streamButton->setStyleSheet(ss2);
     ui->onlineFriends->setStyleSheet(ss2);
     ui->newPosts->setStyleSheet(ss3);
-    this->m.ui->NameBar1->setStyleSheet(ss1);
     this->m.ui->pushButton->setStyleSheet(ss1);
     ui->displayname->setText(this->conf->displayName);
 }
@@ -818,15 +948,11 @@ void meshh::openProfile(QString uname) {
                     this->loadProfile(tmp2);
                 }
             }
-            QString ss;
-            ss.append("color: ");
-            ss.append(this->conf->themeColor);
-            this->p.ui->nameplate->setStyleSheet(ss);
         } else {
             this->loadProfile(*this->myInfo);
         }
-        this->p.show();
     }
+    this->p.show();
 }
 
 void meshh::addInfo(QString cat, QString inf) {
@@ -852,7 +978,7 @@ void meshh::loadProfile(profileInfo inf) {
     if (inf.occupation != "") { addInfo("Occupation: ", inf.occupation); }
     if (inf.education != "") { addInfo("Education: ", inf.education); }
     if (inf.email != "") { addInfo("E-Mail: ", inf.email); }
-    if (inf.avatar != ""){
+    if (inf.avatar != "" && this->p.ui->profileFrame->layout() == NULL){
         QVBoxLayout *layout = new QVBoxLayout;
         QGraphicsView* w = new QGraphicsView();
         QGraphicsScene* scene = new QGraphicsScene(w);
@@ -867,6 +993,13 @@ void meshh::loadProfile(profileInfo inf) {
 
         this->p.ui->profileFrame->setLayout(layout);
         w->show();
+    }
+    if (inf.themecode != "") {
+        QString ss;
+        ss.append("color:");
+        ss.append(inf.themecode);
+        ss.append(";");
+        this->p.ui->nameplate->setStyleSheet(ss);
     }
 }
 
@@ -895,6 +1028,7 @@ void meshh::loadMyProfile() {
             if (varname == "imuser")       { this->myInfo->imusers->push_back(val);      }
             if (varname == "link")         { this->myInfo->links->push_back(val);        }
             if (varname == "avatar")       { this->myInfo->avatar    = val;              }
+            if (varname == "themecode")    { this->myInfo->themecode = val;              }
         }
     }
 }
@@ -922,6 +1056,67 @@ void meshh::saveSettings() {
     this->s.close();
 }
 
+void meshh::sendProfile(QHostAddress host, qint16 port) {
+    QString outstr;
+    profileInfo *my = this->myInfo;
+    outstr.append("0x07:");
+    if (my->age != NULL) {
+        outstr.append("AGE=");
+        outstr.append(QString::number(my->age));
+        outstr.append(";");
+    }
+    if (my->city != "") {
+        outstr.append("CITY=");
+        outstr.append(my->city);
+        outstr.append(";");
+    }
+    if (my->state != "") {
+        outstr.append("STATE=");
+        outstr.append(my->state);
+        outstr.append(";");
+    }
+    if (my->occupation != "") {
+        outstr.append("OCC=");
+        outstr.append(my->occupation);
+        outstr.append(";");
+    }
+    if (my->email != "") {
+        outstr.append("EMAIL=");
+        outstr.append(my->email);
+        outstr.append(";");
+    }
+    if (my->themecode != "") {
+        outstr.append("TCODE=");
+        outstr.append(my->themecode);
+        outstr.append(";");
+    }
+    QByteArray datagram;
+    datagram.append(outstr);
+    udpSocket->writeDatagram(datagram.data(), datagram.size(), host, port);
+}
+
+profileInfo meshh::findInfo(friendInfo inf) {
+    for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
+        profileInfo tmp = *it;
+        if (tmp.inf.username == inf.username) {
+            return *it;
+        }
+    }
+    profileInfo *empty = new profileInfo();
+    return *empty;
+}
+
+profileInfo meshh::findInfo(QString uname) {
+    for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
+        profileInfo tmp = *it;
+        if (tmp.inf.username == uname) {
+            return *it;
+        }
+    }
+    profileInfo *empty = new profileInfo();
+    return *empty;
+}
+
 profileInfo::profileInfo() {
     firstname = "";
     lastname = "";
@@ -939,4 +1134,6 @@ profileInfo::profileInfo() {
     imusers = new std::vector<QString>;
     links = new std::vector<QString>;
     avatar = "";
+    themecode = "";
 }
+

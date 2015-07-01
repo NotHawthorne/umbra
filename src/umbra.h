@@ -43,7 +43,7 @@ public:
 
 class profileInfo {
 public:
-    QString firstname, lastname, country, state, city, occupation, email, education, avatar;
+    QString firstname, lastname, country, state, city, occupation, email, education, avatar, themecode;
     std::vector<QString> *p_occupations,*imusers, *links;
     int age, birthyear, birthmonth, birthday;
     friendInfo inf;
@@ -75,7 +75,7 @@ public:
     explicit meshh(QWidget *parent = 0);
     ~meshh();
     umbraConfig ReadConfig();
-    void recvPost(QString str);
+    void recvPost(newsPost postdata);
     void hiFriends();
 
 private slots:
@@ -114,6 +114,9 @@ private slots:
     void loadMyProfile();
     void addInfo(QString cat, QString inf);
     void requestProfile(QString uname);
+    void sendProfile(QHostAddress host, qint16 port);
+    profileInfo findInfo(friendInfo inf);
+    profileInfo findInfo(QString uname);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
