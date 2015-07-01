@@ -41,19 +41,6 @@
     <property name="midLineWidth">
      <number>2</number>
     </property>
-    <widget class="QGraphicsView" name="profileImage">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>120</width>
-       <height>120</height>
-      </rect>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-    </widget>
    </widget>
    <widget class="Line" name="nameplate">
     <property name="geometry">
@@ -214,7 +201,7 @@
         <x>9</x>
         <y>-1</y>
         <width>601</width>
-        <height>101</height>
+        <height>111</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="postFeed"/>

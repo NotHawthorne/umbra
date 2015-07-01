@@ -35,6 +35,7 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     this->conversessions = new std::vector<QHostAddress>;
     this->msgsPending = new std::vector<QString>;
     this->tcpData = new QByteArray();
+    this->profiles = new std::vector<profileInfo>;
 
     ui->scrollArea->widget()->setLayout(ui->verticalLayout);
     ui->verticalLayout->setAlignment(Qt::AlignTop);
@@ -75,13 +76,12 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     connect(ui->confirmFriendButton, SIGNAL(clicked()), this, SLOT(reqFriend()));
     connect(this->m.ui->pushButton, SIGNAL(clicked()), this, SLOT(sendMsg()));
     connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
-    connect(ui->profileButton, SIGNAL(clicked()), this, SLOT(openProfile()));
+    QSignalMapper *signalMapper = new QSignalMapper(this);
+    signalMapper->setMapping(ui->profileButton, QString(this->conf->displayName));
+    connect(ui->profileButton, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(openProfile(QString)));
     haveKey();
     this->loadMyProfile();
-    for (std::vector<friendInfo>::iterator it = this->friends->begin(); it != this->friends->end(); ++it) {
-        friendInfo tmp = *it;
-        this->sendPicture("shhdir/images/pepe.jpg", tmp);
-    }
 }
 
 meshh::~meshh() { delete ui; }
@@ -144,7 +144,7 @@ void meshh::processPendingDatagrams()
                     {
                         sbarmsg.append(tmp.username);
                         sbarmsg.append(" is now online.");
-                        //this->alert(sbarmsg, "green");
+                        this->alert(sbarmsg, "green");
                     }
                     *it = tmp;
                     this->refreshFriends();
@@ -190,7 +190,7 @@ void meshh::processPendingDatagrams()
                     QString sbarmsg;
                     sbarmsg.append(tmp.username);
                     sbarmsg.append(" is now online.");
-                    //this->alert(sbarmsg, "green");
+                    this->alert(sbarmsg, "green");
                 }
             }
         }
@@ -246,9 +246,17 @@ void meshh::processPendingDatagrams()
                 }
             }
         }
-        if (recv.section(":", 0, 0) == "0x07") {
-            QString in = recv.section(":", 1, 1);
-            this->alert(recv.section(":", 1, 1), "green");
+        if (recv.section(":", 0, 0) == "0x06") {
+            bool found = false;
+            for (std::vector<friendInfo>::iterator it = this->friends->begin(); it != this->friends->end(); it++){
+                if (it->IP == host && it->portnum == sndprt) {
+                    friendInfo inf = *it;
+                    this->sendPicture(this->myInfo->avatar, inf);
+                    found = true;
+                }
+            }
+            if (!found)
+                this->alert("Unauthorized user requested access to your profile. (" + host.toString() + ")", "red");
         }
         //else { QString temp("Unhandled datagram received: "); temp.append(datagram.data()); this->alert(temp, "red"); }
     }
@@ -269,8 +277,21 @@ void meshh::processTcpData() {
     QImage img;
     in >> img;
     QString fname = "cache/" + QString::number(qrand()) + ".jpg";
-    if (img.save(fname)==NULL) { this->alert("saving failed", "red"); }
-    else { this->alert("saving succeeded", "green"); }
+    img.save(fname);
+    profileInfo *info = new profileInfo();
+    info->avatar = fname;
+    friendInfo tmp = findFriend(this->pndfrnd);
+    friendInfo *newfrnd = new friendInfo();
+    newfrnd->username = tmp.username;
+    info->inf = *newfrnd;
+    bool found = false;
+    for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
+        profileInfo ptmp = *it;
+        if (ptmp.inf.username == tmp.username)
+            found = true;
+    }
+    if (!found)
+        this->profiles->push_back(*info);
 }
 
 void meshh::newTcpConnection() {
@@ -282,7 +303,7 @@ void meshh::sendPicture(QString path, friendInfo inf) {
     tcpSocket = new QTcpSocket(this);
     tcpSocket->connectToHost(inf.IP, inf.portnum);
     tcpSocket->waitForConnected(1000);
-    QImage image("shhdir/images/pepe.jpg");
+    QImage image(path);
     QByteArray buffer;
     QDataStream out(&buffer, QIODevice::WriteOnly);
     out << int(0);
@@ -290,6 +311,15 @@ void meshh::sendPicture(QString path, friendInfo inf) {
     out.device()->seek(0);
     out << buffer.size();
     tcpSocket->write(buffer);
+}
+
+void meshh::requestProfile(QString uname) {
+    friendInfo inf = this->findFriend(uname);
+    this->pndfrnd = inf.username;
+    QByteArray datagram;
+    QString out("0x06:REQPROFILE");
+    datagram.append(out);
+    udpSocket->writeDatagram(datagram.data(), datagram.size(), inf.IP, inf.portnum);
 }
 
 void meshh::processPendingMessages() {
@@ -435,6 +465,10 @@ void meshh::newMessageSession(QString str) {
     this->m.ui->displayName1->setText(str);
     this->m.ui->NameBar1->resize((this->m.ui->NameBar1->width() + ((11*str.length())-55)), this->m.ui->NameBar1->height());
     this->m.ui->NameBar1->move((this->m.ui->NameBar1->x() - ((11*str.length())-55)), this->m.ui->NameBar1->y());
+    QSignalMapper *signalMapper = new QSignalMapper(this);
+    signalMapper->setMapping(this->m.ui->displayName1, QString(this->m.ui->displayName1->text()));
+    connect(this->m.ui->displayName1, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(openProfile(QString)));
     this->m.show();
     this->m.move(QCursor::pos());
 }
@@ -481,6 +515,10 @@ void meshh::refreshFriends() {
         signalMapper->setMapping(ui->friendList->itemAt(i)->widget(), QString(but->text()));
         connect(&*but, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
         connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(newMessageSession(QString)));
+        QSignalMapper *signalMapper2 = new QSignalMapper(this);
+        signalMapper2->setMapping(ui->friendList->itemAt(i)->widget(), QString(but->text()));
+        connect(&*but, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
+        connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(requestProfile(QString)));
     }
     ui->onlineFriends->setText(QString::number(fonline->size()));
 }
@@ -769,14 +807,26 @@ void meshh::openSettings() {
     connect(this->s.ui->saveButton, SIGNAL(clicked()), this, SLOT(saveSettings()));
 }
 
-void meshh::openProfile() {
-    this->p.ui->displayname->setText(this->conf->displayName);
-    QString ss;
-    ss.append("color: ");
-    ss.append(this->conf->themeColor);
-    this->p.ui->nameplate->setStyleSheet(ss);
-    this->loadProfile(*this->myInfo);
-    this->p.show();
+void meshh::openProfile(QString uname) {
+    if (uname != this->curfriend) {
+        if (uname != this->conf->displayName) {
+            this->curfriend = uname;
+            friendInfo tmp = findFriend(uname);
+            for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
+                profileInfo tmp2 = *it;
+                if (tmp2.inf.username == tmp.username) {
+                    this->loadProfile(tmp2);
+                }
+            }
+            QString ss;
+            ss.append("color: ");
+            ss.append(this->conf->themeColor);
+            this->p.ui->nameplate->setStyleSheet(ss);
+        } else {
+            this->loadProfile(*this->myInfo);
+        }
+        this->p.show();
+    }
 }
 
 void meshh::addInfo(QString cat, QString inf) {
@@ -794,7 +844,7 @@ void meshh::loadProfile(profileInfo inf) {
             namestr.append(inf.lastname);
         }
     } else {
-        //display username in place of first/last
+        namestr.append(inf.inf.username);
     }
     this->p.ui->displayname->setText(namestr);
     if (inf.age != NULL) { addInfo("Age: ", QString::number(inf.age)); }
@@ -802,6 +852,22 @@ void meshh::loadProfile(profileInfo inf) {
     if (inf.occupation != "") { addInfo("Occupation: ", inf.occupation); }
     if (inf.education != "") { addInfo("Education: ", inf.education); }
     if (inf.email != "") { addInfo("E-Mail: ", inf.email); }
+    if (inf.avatar != ""){
+        QVBoxLayout *layout = new QVBoxLayout;
+        QGraphicsView* w = new QGraphicsView();
+        QGraphicsScene* scene = new QGraphicsScene(w);
+        QPixmap pix(inf.avatar);
+        QPixmap pix2 = pix.scaled(120,120);
+        scene->setSceneRect(0,0,140,140);
+        w->setScene(scene);
+        w->setFixedSize(140, 140);
+        scene->addPixmap(pix2);
+        layout->setContentsMargins(0,0,0,0);
+        layout->addWidget(w, 0, Qt::AlignTop);
+
+        this->p.ui->profileFrame->setLayout(layout);
+        w->show();
+    }
 }
 
 void meshh::loadMyProfile() {
@@ -828,6 +894,7 @@ void meshh::loadMyProfile() {
             if (varname == "email")        { this->myInfo->email     = val;              }
             if (varname == "imuser")       { this->myInfo->imusers->push_back(val);      }
             if (varname == "link")         { this->myInfo->links->push_back(val);        }
+            if (varname == "avatar")       { this->myInfo->avatar    = val;              }
         }
     }
 }
@@ -871,4 +938,5 @@ profileInfo::profileInfo() {
     email = "";
     imusers = new std::vector<QString>;
     links = new std::vector<QString>;
+    avatar = "";
 }
