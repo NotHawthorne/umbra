@@ -12,6 +12,12 @@ newsPost::newsPost(QString uname, QString pdate, QString content, QString fname)
     txt = content;
     filename = fname;
 }
+newsPost::newsPost(QString uname, QString pdate, QString content, QDateTime d_time) {
+    username = uname;
+    date = pdate;
+    txt = content;
+    dt = d_time;
+}
 
 friendInfo::friendInfo(QString uname, QString ipaddr, QString port, bool status){
     username = uname;

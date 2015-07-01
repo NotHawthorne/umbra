@@ -3,6 +3,7 @@
 #include <QtMultimedia/QSound>
 #include <QtMultimedia/QSoundEffect>
 #include <QSignalMapper>
+#include <utility>
 
 #include "profile.h"
 #include "ui_profile.h"
@@ -177,7 +178,9 @@ void meshh::processPendingDatagrams()
                     timestamp.append(purestamp.section("-", 1, 1).section("/", 0, 0));
                     timestamp.append(":");
                     timestamp.append(purestamp.section("-", 1, 1).section("/", 1, 1));
-                    newsPost pst(tmp.username, timestamp, tmpstr.section(";", 3, 3));
+                    QDateTime datetimmy;
+                    datetimmy = QDateTime::fromString(purestamp, "MM/dd/yyyy-hh/mm");
+                    newsPost pst(tmp.username, timestamp, tmpstr.section(";", 3, 3), datetimmy);
                     this->posts->push_back(pst);
                     tmp.online = true;
                     *it = tmp;
@@ -708,7 +711,7 @@ void meshh::addPost() {
     std::ofstream file;
     file.open("shhdir/posts.shh", std::ios_base::out | std::ios_base::app);
     file << std::endl << str.toStdString();
-    newsPost pst(this->conf->displayName, stamp, ui->postBox->toPlainText());
+    newsPost pst(this->conf->displayName, stamp, ui->postBox->toPlainText(), qdt);
     this->posts->push_back(pst);
     file.close();
 }
@@ -730,11 +733,14 @@ void meshh::populateLocalPosts() {
                 timestamp.append(s2);
                 timestamp.append(":");
                 timestamp.append(s3);
+                QDateTime datetimmy;
+                datetimmy = QDateTime::fromString(s0.section(";", 1, 1), "MM/dd/yyyy-hh/mm");
+                QString datestr = datetimmy.toString();
                 newsPost pst(
                             this->conf->displayName,
                             timestamp,
-                            s0.section(";", 3, 3)
-                            );
+                            s0.section(";", 3, 3),
+                            datetimmy);
                 this->posts->push_back(pst);
             }
         }
@@ -746,9 +752,21 @@ void meshh::requestStream() {
     while (!ui->verticalLayout->isEmpty()) {
         ui->verticalLayout->removeItem(ui->verticalLayout->itemAt(0));
     }
-    std::random_shuffle(this->posts->begin(), this->posts->end());
+    std::vector<std::pair<int, newsPost>> *ormap = new std::vector<std::pair<int, newsPost>>;
     for (std::vector<newsPost>::iterator it = this->posts->begin(); it != this->posts->end(); ++it) {
-        recvPost(*it);
+        newsPost tmp = *it;
+        QDateTime tmpdt = tmp.dt;
+        QDate tmpd = tmpdt.date();
+        QTime tmpt = tmpdt.time();
+        int dtsum = tmpd.year() + tmpd.month() + tmpd.day() + tmpt.hour() + tmpt.minute();
+        ormap->push_back(std::pair<int, newsPost>(dtsum, tmp));
+    }
+    std::sort(ormap->begin(), ormap->end(), [](const std::pair<int,newsPost> &left, const std::pair<int,newsPost> &right) {
+        return left.first > right.first;
+    });
+    for (std::vector<std::pair<int, newsPost>>::iterator it=ormap->begin(); it!=ormap->end(); ++it) {
+        std::pair<int, newsPost> tmp = *it;
+        recvPost(tmp.second);
     }
     ui->newPosts->setText("0");
 }
@@ -781,17 +799,24 @@ void meshh::recvPost(newsPost postdata) {
     w->setStyleSheet("border-width: 0px;");
     hl->addWidget(w, 0, Qt::AlignTop);
 
-    //NAME+DATE BUTTON
+    //NAME BUTTON
     QVBoxLayout *l_postinfo = new QVBoxLayout;
     QWidget *postinfo = new QWidget;
     QPushButton *btn = new QPushButton;
     btn->setFlat(true);
-    if (pinf.lastname != "")
-        btn->setText(pinf.firstname + " " + pinf.lastname);
-    if (pinf.firstname == "")
-        btn->setText(postdata.username);
+    btn->setText(postdata.username);
     btn->setStyleSheet("QPushButton{text-align: left; border-width: 0px;} QPushButton:hover{ color: #ddd; }");
+
+    //MAP BUTTON
+    QSignalMapper *signalMapper = new QSignalMapper(this);
+    signalMapper->setMapping(btn, QString(btn->text()));
+    connect(btn, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(openProfile(QString)));
+
+    //ADD BUTTON
     l_postinfo->addWidget(btn, 0, Qt::AlignLeft);
+
+    //DATESTAMP LABEL
     QLabel *datestamp = new QLabel;
     datestamp->setStyleSheet("font-family:ubuntu; font-size:11px; font-style:light; border-width: 0px;");
     datestamp->setText("posted on " + postdata.date);
@@ -948,7 +973,8 @@ void meshh::openProfile(QString uname) {
                     this->loadProfile(tmp2);
                 }
             }
-        } else {
+        }
+        if (uname == this->conf->displayName){
             this->loadProfile(*this->myInfo);
         }
     }

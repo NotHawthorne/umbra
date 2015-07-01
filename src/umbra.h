@@ -22,10 +22,14 @@ namespace Ui { class newsPost; class meshh; }
 class newsPost {
 public:
     QString username, date, txt, filename;
+    QDateTime dt;
 public:
     newsPost (QString, QString, QString);
     newsPost (QString, QString, QString, QString);
+    newsPost (QString, QString, QString, QDateTime);
 };
+
+typedef std::map<int, newsPost> orderedNewsMap;
 
 class friendInfo {
 public:
