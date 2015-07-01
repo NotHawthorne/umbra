@@ -137,6 +137,7 @@ private:
     QByteArray  *tcpData;
     QUdpSocket  *udpSocket;
     QTcpSocket  *tcpSocket;
+    QTcpServer  *tcpServer;
     QPoint       dragPosition;
     friendInfo   p_friend;
     umbraConfig *conf;

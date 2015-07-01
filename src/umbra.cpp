@@ -46,6 +46,10 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     udpSocket->bind(this->conf->listenPort, QUdpSocket::ShareAddress);
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
 
+    tcpServer = new QTcpServer(this);
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(newTcpConnection()));
+    tcpServer->listen(QHostAddress::Any, this->conf->listenPort);
+
     ui->displayname->setText(this->conf->displayName);
     ui->displayname->setMinimumWidth(this->conf->displayName.length() * 9);
     ui->displayname->setToolTip("<img src='shhdir/images/pepe.jpg' width='256' height='256'>");
@@ -103,10 +107,15 @@ void meshh::end() {
             udpSocket->writeDatagram(datagram.data(), datagram.size(), addr, prt);
         }
     }
+    QString path = "cache";
+    QDir dir(path);
+    dir.setNameFilters(QStringList() << "*.*");
+    dir.setFilter(QDir::Files);
+    foreach(QString dirFile, dir.entryList()) {
+        dir.remove(dirFile);
+    }
     exit(0);
 }
-
-bool incmsg = false;
 
 void meshh::processPendingDatagrams()
 {
@@ -135,7 +144,7 @@ void meshh::processPendingDatagrams()
                     {
                         sbarmsg.append(tmp.username);
                         sbarmsg.append(" is now online.");
-                        this->alert(sbarmsg, "green");
+                        //this->alert(sbarmsg, "green");
                     }
                     *it = tmp;
                     this->refreshFriends();
@@ -181,7 +190,7 @@ void meshh::processPendingDatagrams()
                     QString sbarmsg;
                     sbarmsg.append(tmp.username);
                     sbarmsg.append(" is now online.");
-                    this->alert(sbarmsg, "green");
+                    //this->alert(sbarmsg, "green");
                 }
             }
         }
@@ -251,7 +260,7 @@ void meshh::processTcpData() {
     if (tcpSocket->bytesAvailable() && msgSize == -1) {
         in >> msgSize;
     }
-    while (tcpSocket->bytesAvailable() < msgSize - sizeof(int)) {
+    while (tcpSocket->bytesAvailable() < msgSize-sizeof(int)) {
         if (!tcpSocket->waitForReadyRead(100)) {
             tcpSocket->disconnectFromHost();
             break;
@@ -259,22 +268,28 @@ void meshh::processTcpData() {
     }
     QImage img;
     in >> img;
-    img.save("test.jpg");
+    QString fname = "cache/" + QString::number(qrand()) + ".jpg";
+    if (img.save(fname)==NULL) { this->alert("saving failed", "red"); }
+    else { this->alert("saving succeeded", "green"); }
 }
 
 void meshh::newTcpConnection() {
-    connect(tcpSocket, SIGNAL(readyRead()),this, SLOT(processTcpData()));
-    this->alert("new tcp connection!", "green");
+    tcpSocket = tcpServer->nextPendingConnection();
+    connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(processTcpData()));
 }
 
 void meshh::sendPicture(QString path, friendInfo inf) {
+    tcpSocket = new QTcpSocket(this);
+    tcpSocket->connectToHost(inf.IP, inf.portnum);
+    tcpSocket->waitForConnected(1000);
     QImage image("shhdir/images/pepe.jpg");
     QByteArray buffer;
-    buffer.append("0x07:");
     QDataStream out(&buffer, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_0);
+    out << int(0);
     out << image;
-    udpSocket->writeDatagram(buffer.data(), buffer.size(), inf.IP, inf.portnum);
+    out.device()->seek(0);
+    out << buffer.size();
+    tcpSocket->write(buffer);
 }
 
 void meshh::processPendingMessages() {
@@ -699,7 +714,7 @@ void meshh::alert(QString instr, QString color) {
     anim->setEasingCurve(QEasingCurve::InExpo);
     anim->start(QAbstractAnimation::DeleteWhenStopped);
 
-    QSound *effect = new QSound("zapclap.wav", this);
+    QSound *effect = new QSound("shhdir/sounds/alert.wav", this);
     effect->play();
 }
 
@@ -767,7 +782,7 @@ void meshh::openProfile() {
 void meshh::addInfo(QString cat, QString inf) {
     QLabel *label = new QLabel();
     label->setText(cat + inf);
-    this->p.ui->infoLayout->addWidget(label);
+    this->p.ui->infoLayout->addWidget(label, 0, Qt::AlignTop);
 }
 
 void meshh::loadProfile(profileInfo inf) {
