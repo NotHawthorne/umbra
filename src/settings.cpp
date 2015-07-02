@@ -13,6 +13,7 @@ settings::settings(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->previewButton, SIGNAL(clicked()), this, SLOT(previewColor()));
     connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(ui->radioButton, SIGNAL(toggled(bool)), this, SLOT(toggleAddressBox()));
 }
 
 settings::~settings()
@@ -41,4 +42,18 @@ void settings::previewColor() {
     ss.append("color: ");
     ss.append(ui->themeColorBox->text());
     ui->colorBox->setStyleSheet(ss);
+}
+
+void settings::enableAddressBox() {
+    ui->addressBox->setEnabled(true);
+}
+
+void settings::disableAddressBox() {
+    ui->addressBox->setEnabled(false);
+    ui->addressBox->setText("youraddress");
+}
+
+void settings::toggleAddressBox() {
+    if (ui->radioButton->isChecked()) { this->enableAddressBox(); }
+    else { this->disableAddressBox(); }
 }

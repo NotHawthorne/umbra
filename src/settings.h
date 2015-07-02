@@ -22,6 +22,9 @@ protected:
 
 private slots:
     void previewColor();
+    void enableAddressBox();
+    void disableAddressBox();
+    void toggleAddressBox();
 
 private:
     QPoint dragPosition;

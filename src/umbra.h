@@ -61,7 +61,7 @@ public:
 
 class umbraConfig {
 public:
-    QString displayName, displayImg, themeColor;
+    QString displayName, displayImg, themeColor, indexName;
     qint16 listenPort;
     int privacyLevel;
     bool debug;
@@ -121,6 +121,9 @@ private slots:
     void sendProfile(QHostAddress host, qint16 port);
     profileInfo findInfo(friendInfo inf);
     profileInfo findInfo(QString uname);
+    void askDuke(QString uname);
+    void askDuke();
+    void openSearchBox();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;

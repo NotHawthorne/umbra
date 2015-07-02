@@ -27,6 +27,7 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     this->conf->privacyLevel = tmpconf.privacyLevel;
     this->conf->listenPort = tmpconf.listenPort;
     this->conf->themeColor = tmpconf.themeColor;
+    this->conf->indexName = tmpconf.indexName;
 
     updateColor();
     this->loadMyProfile();
@@ -62,6 +63,8 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     ui->alertFrame->hide();
     if (debug==false)
         ui->statusBar->hide();
+    ui->searchBox->hide();
+    ui->searchEnterButton->hide();
 
     this->onlineFriends = 0;
     this->hiFriends();
@@ -78,6 +81,9 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     connect(ui->confirmFriendButton, SIGNAL(clicked()), this, SLOT(reqFriend()));
     connect(this->m.ui->pushButton, SIGNAL(clicked()), this, SLOT(sendMsg()));
     connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
+    connect(ui->searchEnterButton, SIGNAL(clicked()), this, SLOT(askDuke()));
+    connect(ui->searchButton, SIGNAL(clicked()), this, SLOT(openSearchBox()));
+
     QSignalMapper *signalMapper = new QSignalMapper(this);
     signalMapper->setMapping(ui->profileButton, QString(this->conf->displayName));
     connect(ui->profileButton, SIGNAL(clicked()), &*signalMapper, SLOT(map()));
@@ -255,6 +261,7 @@ void meshh::processPendingDatagrams()
                 if (it->IP == host && it->portnum == sndprt) {
                     friendInfo inf = *it;
                     this->sendPicture(this->myInfo->avatar, inf);
+                    this->sendProfile(inf.IP, inf.portnum);
                     found = true;
                 }
             }
@@ -305,6 +312,12 @@ void meshh::processPendingDatagrams()
                 }
                 this->profiles->push_back(*info);
             }
+        }
+        if (recv.section(":", 0, 0) == "0x08") {
+            this->alert(QString(recv.section(":", 1, 1) + ":" + recv.section(":", 2, 2)), "green");
+        }
+        if (recv.section(":", 0, 0) == "0x09") {
+            this->alert(recv.section(":", 1, 1), "red");
         }
         //else { QString temp("Unhandled datagram received: "); temp.append(datagram.data()); this->alert(temp, "red"); }
     }
@@ -366,7 +379,20 @@ void meshh::sendPicture(QString path, friendInfo inf) {
     out.device()->seek(0);
     out << buffer.size();
     tcpSocket->write(buffer);
-    this->sendProfile(inf.IP, inf.portnum);
+}
+
+void meshh::askDuke(QString uname) {
+    QByteArray out;
+    out.append("REQ:");
+    out.append(uname);
+    udpSocket->writeDatagram(out.data(), out.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+}
+
+void meshh::askDuke() {
+    QByteArray out;
+    out.append("REQ:");
+    out.append(ui->searchBox->text());
+    udpSocket->writeDatagram(out.data(), out.size(), QHostAddress("umbraduke.ddns.net"), 1974);
 }
 
 void meshh::requestProfile(QString uname) {
@@ -376,6 +402,7 @@ void meshh::requestProfile(QString uname) {
     QString out("0x06:REQPROFILE");
     datagram.append(out);
     udpSocket->writeDatagram(datagram.data(), datagram.size(), inf.IP, inf.portnum);
+    this->askDuke("nothawthorne@umbranet");
 }
 
 void meshh::processPendingMessages() {
@@ -656,7 +683,6 @@ void meshh::mouseMoveEvent(QMouseEvent *event)
 umbraConfig meshh::ReadConfig() {
     umbraConfig *out = new umbraConfig();
     std::string line;
-    std::string tmp;
     std::string pth = "shhdir/conf.shh";
     std::ifstream myfile (pth.c_str());
     if (myfile.is_open()) {
@@ -680,6 +706,9 @@ umbraConfig meshh::ReadConfig() {
             }
             else if (s0.section("=", 0, 0).toStdString() == "debug") {
                 if (s0.section("=", 1, 1) == "^^vv<><>AB$") { out->debug = true; }
+            }
+            else if (s0.section("=", 0, 0).toStdString() == "indexname") {
+                out->indexName = s0.section("=", 1, 1);
             }
         }
     }
@@ -758,7 +787,7 @@ void meshh::requestStream() {
         QDateTime tmpdt = tmp.dt;
         QDate tmpd = tmpdt.date();
         QTime tmpt = tmpdt.time();
-        int dtsum = tmpd.year() + tmpd.month() + tmpd.day() + tmpt.hour() + tmpt.minute();
+        int dtsum = (tmpd.year() * 300) + (tmpd.month() * 30) + tmpd.day() + tmpt.hour() + tmpt.minute();
         ormap->push_back(std::pair<int, newsPost>(dtsum, tmp));
     }
     std::sort(ormap->begin(), ormap->end(), [](const std::pair<int,newsPost> &left, const std::pair<int,newsPost> &right) {
@@ -953,6 +982,12 @@ void meshh::openSettings() {
     this->s.ui->themeColorBox->setText(this->conf->themeColor);
     this->s.ui->privacyLevel->setValue(this->conf->privacyLevel);
     this->s.ui->listenPortBox->setText(QString::number(this->conf->listenPort));
+    if (this->conf->indexName == "") { this->s.ui->addressBox->setEnabled(false); }
+    else {
+        this->s.ui->addressBox->setEnabled(true);
+        this->s.ui->addressBox->setText(this->conf->indexName.section("@", 0, 0));
+        this->s.ui->radioButton->setChecked(true);
+    }
     QString ss;
     ss.append("color: ");
     ss.append(this->conf->themeColor);
@@ -1143,23 +1178,12 @@ profileInfo meshh::findInfo(QString uname) {
     return *empty;
 }
 
-profileInfo::profileInfo() {
-    firstname = "";
-    lastname = "";
-    age = NULL;
-    birthyear = NULL;
-    birthmonth = NULL;
-    birthday = NULL;
-    country = "";
-    state = "";
-    city = "";
-    occupation = "";
-    p_occupations = new std::vector<QString>;
-    education = "";
-    email = "";
-    imusers = new std::vector<QString>;
-    links = new std::vector<QString>;
-    avatar = "";
-    themecode = "";
+void meshh::openSearchBox() {
+    if (ui->searchBox->isHidden()) {
+        ui->searchBox->show();
+        ui->searchEnterButton->show();
+    } else {
+        ui->searchBox->hide();
+        ui->searchEnterButton->hide();
+    }
 }
-

@@ -65,4 +65,25 @@ umbraConfig::umbraConfig(QString uname, QString path, QString prt, QString privl
     debug = false;
 }
 
+profileInfo::profileInfo() {
+    firstname = "";
+    lastname = "";
+    age = NULL;
+    birthyear = NULL;
+    birthmonth = NULL;
+    birthday = NULL;
+    country = "";
+    state = "";
+    city = "";
+    occupation = "";
+    p_occupations = new std::vector<QString>;
+    education = "";
+    email = "";
+    imusers = new std::vector<QString>;
+    links = new std::vector<QString>;
+    avatar = "";
+    themecode = "";
+}
+
+
 #endif // CONSTRUCTORS_H
