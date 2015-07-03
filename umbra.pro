@@ -11,6 +11,9 @@ QT       += network
 CONFIG   += openssl
 CONFIG   += c++11
 CONFIG   += static
+CONFIG   += crypto
+INCLUDEPATH += /home/nothawthorne/Projects/qca-2.1.0/include/QtCrypto
+LIBS += -L/home/nothawthorne/Projects/qca-2.1.0/lib/qca/crypto -lqca
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -161,7 +164,9 @@ SOURCES += src/main.cpp\
     src/messenger.cpp \
     src/umbra.cpp \
     src/settings.cpp \
-    src/profile.cpp
+    src/profile.cpp \
+    src/loginPrompt.cpp \
+    src/dukeSettings.cpp
 
 HEADERS  += \
     src/crypto.h \
@@ -305,13 +310,17 @@ HEADERS  += \
     src/umbra.h \
     src/settings.h \
     src/constructors.h \
-    src/profile.h
+    src/profile.h \
+    src/loginPrompt.h \
+    src/dukeSettings.h
 
 FORMS    += \
     src/messenger.ui \
     src/umbra.ui \
     src/settings.ui \
-    src/profile.ui
+    src/profile.ui \
+    src/loginPrompt.ui \
+    src/dukeSettings.ui
 
 RESOURCES +=
 

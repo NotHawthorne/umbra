@@ -5,6 +5,10 @@
 #include <QSignalMapper>
 #include <utility>
 
+#include "dukeSettings.h"
+#include "ui_dukeSettings.h"
+#include "loginPrompt.h"
+#include "ui_loginPrompt.h"
 #include "profile.h"
 #include "ui_profile.h"
 #include "settings.h"
@@ -15,8 +19,9 @@
 #include "ui_umbra.h"
 #include "crypto.h"
 #include "constructors.h"
+#include <QtCrypto>
 
-meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui(new Ui::meshh) {
+umbra::umbra(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui(new Ui::umbra) {
     ui->setupUi(this);
     std::srand(unsigned(std::time(0)));
 
@@ -47,7 +52,7 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     ui->friendList->setAlignment(Qt::AlignTop);
 
     udpSocket = new QUdpSocket(this);
-    udpSocket->bind(this->conf->listenPort, QUdpSocket::ShareAddress);
+    udpSocket->bind(this->conf->listenPort, QUdpSocket::DefaultForPlatform);
     connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
 
     tcpServer = new QTcpServer(this);
@@ -91,9 +96,9 @@ meshh::meshh(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     haveKey();
 }
 
-meshh::~meshh() { delete ui; }
+umbra::~umbra() { delete ui; }
 
-void meshh::end() {
+void umbra::end() {
     //read posts.shh and send posts
     std::string line;
     std::string pth = "shhdir/friends.shh";
@@ -124,7 +129,7 @@ void meshh::end() {
     exit(0);
 }
 
-void meshh::processPendingDatagrams()
+void umbra::processPendingDatagrams()
 {
     while (udpSocket->hasPendingDatagrams()) {
         QByteArray datagram;
@@ -319,11 +324,17 @@ void meshh::processPendingDatagrams()
         if (recv.section(":", 0, 0) == "0x09") {
             this->alert(recv.section(":", 1, 1), "red");
         }
+        if (recv.section(":", 0, 0) == "0x10") {
+            this->ds.show();
+        }
+        if (recv.section(":", 0, 0) == "0x11") {
+            this->alert("Login Failed.", "red");
+        }
         //else { QString temp("Unhandled datagram received: "); temp.append(datagram.data()); this->alert(temp, "red"); }
     }
 }
 
-void meshh::processTcpData() {
+void umbra::processTcpData() {
     QDataStream in(tcpSocket);
     int msgSize = -1;
     if (tcpSocket->bytesAvailable() && msgSize == -1) {
@@ -362,12 +373,12 @@ void meshh::processTcpData() {
         this->profiles->push_back(*info);
 }
 
-void meshh::newTcpConnection() {
+void umbra::newTcpConnection() {
     tcpSocket = tcpServer->nextPendingConnection();
     connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(processTcpData()));
 }
 
-void meshh::sendPicture(QString path, friendInfo inf) {
+void umbra::sendPicture(QString path, friendInfo inf) {
     tcpSocket = new QTcpSocket(this);
     tcpSocket->connectToHost(inf.IP, inf.portnum);
     tcpSocket->waitForConnected(1000);
@@ -381,21 +392,21 @@ void meshh::sendPicture(QString path, friendInfo inf) {
     tcpSocket->write(buffer);
 }
 
-void meshh::askDuke(QString uname) {
+void umbra::askDuke(QString uname) {
     QByteArray out;
     out.append("REQ:");
     out.append(uname);
     udpSocket->writeDatagram(out.data(), out.size(), QHostAddress("umbraduke.ddns.net"), 1974);
 }
 
-void meshh::askDuke() {
+void umbra::askDuke() {
     QByteArray out;
     out.append("REQ:");
     out.append(ui->searchBox->text());
     udpSocket->writeDatagram(out.data(), out.size(), QHostAddress("umbraduke.ddns.net"), 1974);
 }
 
-void meshh::requestProfile(QString uname) {
+void umbra::requestProfile(QString uname) {
     friendInfo inf = this->findFriend(uname);
     this->pndfrnd = inf.username;
     QByteArray datagram;
@@ -405,7 +416,7 @@ void meshh::requestProfile(QString uname) {
     this->askDuke("nothawthorne@umbranet");
 }
 
-void meshh::processPendingMessages() {
+void umbra::processPendingMessages() {
     for (std::vector<QString>::iterator it = this->msgsPending->begin(); it != this->msgsPending->end(); ++it) {
         QString itstr = *it;
         QString uname(itstr.section(":", 0, 0));
@@ -424,28 +435,28 @@ void meshh::processPendingMessages() {
     }
 }
 
-bool meshh::findFriend(friendInfo inf) {
+bool umbra::findFriend(friendInfo inf) {
     for (std::vector<friendInfo>::iterator it = this->friends->begin(); it != this->friends->end(); it++){
         if (it->username == inf.username) { return true; }
     }
     return false;
 }
 
-friendInfo meshh::findFriend(QString namestr) {
+friendInfo umbra::findFriend(QString namestr) {
     for (std::vector<friendInfo>::iterator it = this->friends->begin(); it != this->friends->end(); it++){
         if (it->username == namestr) { return *it; }
     }
     return(friendInfo());
 }
 
-friendInfo meshh::findFriend(QHostAddress inf) {
+friendInfo umbra::findFriend(QHostAddress inf) {
     for (std::vector<friendInfo>::iterator it = this->friends->begin(); it != this->friends->end(); it++){
         if (it->IP == inf) { return *it; }
     }
     return(friendInfo());
 }
 
-void meshh::acceptFriend() {
+void umbra::acceptFriend() {
     ui->alertFrame->hide();
     if (!findFriend(this->p_friend)) {
         this->sendPostData(this->p_friend.IP, this->p_friend.portnum);
@@ -459,19 +470,19 @@ void meshh::acceptFriend() {
     }
 }
 
-void meshh::declineFriend() {
+void umbra::declineFriend() {
     ui->alertFrame->hide();
     QByteArray datagram;
     datagram.append("0x04:NO");
     udpSocket->writeDatagram(datagram.data(), datagram.size(), this->p_friend.IP, this->p_friend.portnum);
 }
 
-void meshh::closeAlert() {
+void umbra::closeAlert() {
     ui->acceptButton->show();
     ui->alertFrame->hide();
 }
 
-void meshh::sendPostData(QHostAddress addr, short unsigned int prt) {
+void umbra::sendPostData(QHostAddress addr, short unsigned int prt) {
     //read posts.shh and send posts
     std::string line;
     std::string pth = "shhdir/posts.shh";
@@ -488,7 +499,7 @@ void meshh::sendPostData(QHostAddress addr, short unsigned int prt) {
     }
 }
 
-void meshh::hiFriends() {
+void umbra::hiFriends() {
     //read posts.shh and send posts
     std::string line;
     std::string pth = "shhdir/friends.shh";
@@ -518,7 +529,7 @@ void meshh::hiFriends() {
     }
 }
 
-void meshh::sendMsg() {
+void umbra::sendMsg() {
     if (this->m.ui->messageBox->toPlainText() != "") {
         std::string plaintext = this->m.ui->messageBox->toPlainText().toStdString();
         std::string ciphertext;
@@ -561,7 +572,7 @@ void meshh::sendMsg() {
     }
 }
 
-void meshh::newMessageSession(QString str) {
+void umbra::newMessageSession(QString str) {
     friendInfo tmp = findFriend(str);
     bool found = false;
     for (std::vector<QHostAddress>::iterator it = this->conversessions->begin(); it != this->conversessions->end(); it++){
@@ -580,7 +591,7 @@ void meshh::newMessageSession(QString str) {
     this->m.move(QCursor::pos());
 }
 
-void meshh::refreshFriends() {
+void umbra::refreshFriends() {
     int n = 0;
     while (!ui->friendList->isEmpty()) {
         ui->friendList->itemAt(0)->widget()->hide();
@@ -630,7 +641,7 @@ void meshh::refreshFriends() {
     ui->onlineFriends->setText(QString::number(fonline->size()));
 }
 
-void meshh::reqFriend() {
+void umbra::reqFriend() {
     QString write;
     friendInfo inf(ui->addName->text(), ui->addIP->text(), ui->addPort->text(), false);
     write.append(inf.username);
@@ -649,7 +660,7 @@ void meshh::reqFriend() {
     this->friends->push_back(inf);
 }
 
-void meshh::saveFriend(friendInfo inf) {
+void umbra::saveFriend(friendInfo inf) {
     QString write;
     write.append(inf.username);
     write.append(":");
@@ -665,14 +676,14 @@ void meshh::saveFriend(friendInfo inf) {
     this->friends->push_back(inf);
 }
 
-void meshh::mousePressEvent(QMouseEvent *event)
+void umbra::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
         dragPosition = event->globalPos() - frameGeometry().topLeft();
         event->accept();
     }
 }
-void meshh::mouseMoveEvent(QMouseEvent *event)
+void umbra::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton) {
         move(event->globalPos() - dragPosition);
@@ -680,7 +691,7 @@ void meshh::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-umbraConfig meshh::ReadConfig() {
+umbraConfig umbra::ReadConfig() {
     umbraConfig *out = new umbraConfig();
     std::string line;
     std::string pth = "shhdir/conf.shh";
@@ -716,7 +727,7 @@ umbraConfig meshh::ReadConfig() {
     return *out;
 }
 
-void meshh::addPost() {
+void umbra::addPost() {
     ui->postFrame->hide();
     QDateTime qdt(QDateTime::currentDateTime());
     QDate dt(qdt.date());
@@ -744,7 +755,7 @@ void meshh::addPost() {
     this->posts->push_back(pst);
     file.close();
 }
-void meshh::populateLocalPosts() {
+void umbra::populateLocalPosts() {
     std::string line;
     std::string pth = "shhdir/posts.shh";
     std::ifstream myfile (pth.c_str());
@@ -777,7 +788,7 @@ void meshh::populateLocalPosts() {
     myfile.close();
 }
 
-void meshh::requestStream() {
+void umbra::requestStream() {
     while (!ui->verticalLayout->isEmpty()) {
         ui->verticalLayout->removeItem(ui->verticalLayout->itemAt(0));
     }
@@ -800,7 +811,7 @@ void meshh::requestStream() {
     ui->newPosts->setText("0");
 }
 
-void meshh::recvPost(newsPost postdata) {
+void umbra::recvPost(newsPost postdata) {
     profileInfo pinf;
     if (postdata.username != this->conf->displayName) {
         pinf = findInfo(postdata.username);
@@ -884,7 +895,7 @@ void meshh::recvPost(newsPost postdata) {
     ui->verticalLayout->addWidget(out, 0, Qt::AlignTop);
 }
 
-void meshh::revealPostFrame() {
+void umbra::revealPostFrame() {
     ui->addFriendFrame->hide();
     ui->friendsFrame->hide();
     if (ui->postFrame->isHidden()) {
@@ -893,7 +904,7 @@ void meshh::revealPostFrame() {
         ui->postFrame->hide();
     }
 }
-void meshh::revealFriendsFrame() {
+void umbra::revealFriendsFrame() {
     this->refreshFriends();
     ui->postFrame->hide();
     if (!ui->friendsFrame->isHidden()) {
@@ -903,7 +914,7 @@ void meshh::revealFriendsFrame() {
         ui->friendsFrame->show();
     }
 }
-void meshh::revealAddFriendFrame() {
+void umbra::revealAddFriendFrame() {
     if (ui->addFriendFrame->isHidden()) {
         ui->addFriendFrame->show();
     } else {
@@ -911,7 +922,7 @@ void meshh::revealAddFriendFrame() {
     }
 }
 
-void meshh::alert(QString instr, QString color) {
+void umbra::alert(QString instr, QString color) {
     ui->alertText->setText(instr);
     connect(ui->declineButton, SIGNAL(clicked()), this, SLOT(closeAlert()));
 
@@ -941,7 +952,7 @@ void meshh::alert(QString instr, QString color) {
     effect->play();
 }
 
-void meshh::updateColor() {
+void umbra::updateColor() {
     QString ss1("color: ");
     ss1.append(this->conf->themeColor);
     ss1.append("; ");
@@ -959,12 +970,12 @@ void meshh::updateColor() {
     ui->displayname->setText(this->conf->displayName);
 }
 
-void meshh::sBarShow(QString msg) {
+void umbra::sBarShow(QString msg) {
     if (debug==true)
         ui->statusBar->showMessage(msg);
 }
 
-void meshh::loadMsgHistory(QString namestr) {
+void umbra::loadMsgHistory(QString namestr) {
     friendInfo tmp = findFriend(namestr);
     this->m.ui->messageHistory->clear();
     for (std::vector<QString>::iterator it = tmp.msgs->begin(); it != tmp.msgs->end(); ++it) {
@@ -976,7 +987,7 @@ void meshh::loadMsgHistory(QString namestr) {
     }
 }
 
-void meshh::openSettings() {
+void umbra::openSettings() {
     this->s.ui->displayNameBox->setText(this->conf->displayName);
     this->s.ui->displayImgBox->setText(this->conf->displayImg);
     this->s.ui->themeColorBox->setText(this->conf->themeColor);
@@ -995,9 +1006,57 @@ void meshh::openSettings() {
     this->s.show();
     this->s.move(QCursor::pos());
     connect(this->s.ui->saveButton, SIGNAL(clicked()), this, SLOT(saveSettings()));
+    connect(this->s.ui->dukeEditButton, SIGNAL(clicked()), this, SLOT(promptLogin()));
 }
 
-void meshh::openProfile(QString uname) {
+void umbra::promptLogin() {
+    this->lp.show();
+    if (this->conf->indexName != "") {
+        this->lp.ui->label_2->show();
+        this->lp.ui->label_2->setText(this->conf->indexName);
+        this->lp.ui->lineEdit_2->hide();
+        connect(this->lp.ui->pushButton, SIGNAL(clicked()), this, SLOT(dukeLogin()));
+    }
+    else {
+        this->lp.ui->label_2->hide();
+        this->lp.ui->lineEdit_2->show();
+        this->lp.ui->pushButton->setText("Register");
+        connect(this->lp.ui->pushButton, SIGNAL(clicked()), this, SLOT(dukeRegister()));
+    }
+}
+
+void umbra::dukeRegister() {
+    /*this->saveSettings();
+    QString out("REG:" + this->conf->indexName + ":");*/
+    QString out("REG:" + this->lp.ui->lineEdit_2->text() + ":");
+    QCA::init();
+    QCA::Hash hash("sha256");
+    hash.update(this->lp.ui->lineEdit->text().toStdString().c_str());
+    QString hashResult = hash.final().toByteArray().toHex();
+    out.append(hashResult);
+    QByteArray dgram;
+    dgram.append(out);
+    udpSocket->writeDatagram(dgram.data(), dgram.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    this->lp.hide();
+}
+
+void umbra::dukeLogin() {
+    QString out;
+    out.append("LOGIN:");
+    out.append(this->conf->indexName);
+    out.append(":");
+    QCA::init();
+    QCA::Hash hash("sha256");
+    hash.update(this->lp.ui->lineEdit->text().toStdString().c_str());
+    QString hashResult = hash.final().toByteArray().toHex();
+    out.append(hashResult);
+    QByteArray data;
+    data.append(out);
+    udpSocket->writeDatagram(data.data(), data.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    this->lp.hide();
+}
+
+void umbra::openProfile(QString uname) {
     if (uname != this->curfriend) {
         if (uname != this->conf->displayName) {
             this->curfriend = uname;
@@ -1016,13 +1075,13 @@ void meshh::openProfile(QString uname) {
     this->p.show();
 }
 
-void meshh::addInfo(QString cat, QString inf) {
+void umbra::addInfo(QString cat, QString inf) {
     QLabel *label = new QLabel();
     label->setText(cat + inf);
     this->p.ui->infoLayout->addWidget(label, 0, Qt::AlignTop);
 }
 
-void meshh::loadProfile(profileInfo inf) {
+void umbra::loadProfile(profileInfo inf) {
     QString namestr;
     if (inf.firstname != "") {
         namestr.append(inf.firstname);
@@ -1064,7 +1123,7 @@ void meshh::loadProfile(profileInfo inf) {
     }
 }
 
-void meshh::loadMyProfile() {
+void umbra::loadMyProfile() {
     this->myInfo = new profileInfo();
     std::string line;
     std::string pth = "shhdir/profile.shh";
@@ -1094,13 +1153,20 @@ void meshh::loadMyProfile() {
     }
 }
 
-void meshh::saveSettings() {
+void umbra::saveSettings() {
     umbraConfig *tmp = this->conf;
-    if (this->s.ui->displayNameBox->text() != tmp->displayName) { tmp->displayName = this->s.ui->displayNameBox->text(); }
-    if (this->s.ui->displayImgBox->text() != tmp->displayImg) { tmp->displayImg = this->s.ui->displayImgBox->text(); }
-    if (this->s.ui->themeColorBox->text() != tmp->themeColor) { tmp->themeColor = this->s.ui->themeColorBox->text(); }
-    if (this->s.ui->privacyLevel->value() != tmp->privacyLevel) { tmp->privacyLevel = this->s.ui->privacyLevel->value(); }
-    if (this->s.ui->listenPortBox->text() != QString::number(tmp->listenPort)) { tmp->listenPort = this->s.ui->listenPortBox->text().toUInt(); }
+    if (!this->s.isHidden()) {
+        if (this->s.ui->displayNameBox->text() != tmp->displayName) { tmp->displayName = this->s.ui->displayNameBox->text(); }
+        if (this->s.ui->displayImgBox->text() != tmp->displayImg) { tmp->displayImg = this->s.ui->displayImgBox->text(); }
+        if (this->s.ui->themeColorBox->text() != tmp->themeColor) { tmp->themeColor = this->s.ui->themeColorBox->text(); }
+        if (this->s.ui->privacyLevel->value() != tmp->privacyLevel) { tmp->privacyLevel = this->s.ui->privacyLevel->value(); }
+        if (this->s.ui->listenPortBox->text() != QString::number(tmp->listenPort)) { tmp->listenPort = this->s.ui->listenPortBox->text().toUInt(); }
+    }
+    if (!this->lp.isHidden()) {
+        tmp->indexName = this->lp.ui->lineEdit_2->text();
+    }
+
+    this->conf = tmp;
 
     std::ofstream file;
     file.open("shhdir/conf.shh", std::ios_base::out);
@@ -1109,15 +1175,14 @@ void meshh::saveSettings() {
     file << "privacylevel=" << this->conf->privacyLevel << std::endl;
     file << "displayimg=" << this->conf->displayImg.toStdString() << std::endl;
     file << "themecolor=" << this->conf->themeColor.toStdString() << std::endl;
+    file << "indexName=" << this->conf->indexName.toStdString() << std::endl;
     file.close();
-
-    this->conf = tmp;
 
     updateColor();
     this->s.close();
 }
 
-void meshh::sendProfile(QHostAddress host, qint16 port) {
+void umbra::sendProfile(QHostAddress host, qint16 port) {
     QString outstr;
     profileInfo *my = this->myInfo;
     outstr.append("0x07:");
@@ -1156,7 +1221,7 @@ void meshh::sendProfile(QHostAddress host, qint16 port) {
     udpSocket->writeDatagram(datagram.data(), datagram.size(), host, port);
 }
 
-profileInfo meshh::findInfo(friendInfo inf) {
+profileInfo umbra::findInfo(friendInfo inf) {
     for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
         profileInfo tmp = *it;
         if (tmp.inf.username == inf.username) {
@@ -1167,7 +1232,7 @@ profileInfo meshh::findInfo(friendInfo inf) {
     return *empty;
 }
 
-profileInfo meshh::findInfo(QString uname) {
+profileInfo umbra::findInfo(QString uname) {
     for (std::vector<profileInfo>::iterator it = this->profiles->begin(); it != this->profiles->end(); ++it) {
         profileInfo tmp = *it;
         if (tmp.inf.username == uname) {
@@ -1178,7 +1243,7 @@ profileInfo meshh::findInfo(QString uname) {
     return *empty;
 }
 
-void meshh::openSearchBox() {
+void umbra::openSearchBox() {
     if (ui->searchBox->isHidden()) {
         ui->searchBox->show();
         ui->searchEnterButton->show();

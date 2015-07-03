@@ -1,5 +1,5 @@
-#ifndef MESHH_H
-#define MESHH_H
+#ifndef umbra_H
+#define umbra_H
 #include <QMainWindow>
 #include <QWidget>
 #include <QtWidgets>
@@ -14,10 +14,12 @@
 #include "messenger.h"
 #include "settings.h"
 #include "profile.h"
+#include "loginPrompt.h"
+#include "dukeSettings.h"
 
 class QUdpSocket;
 
-namespace Ui { class newsPost; class meshh; }
+namespace Ui { class newsPost; class umbra; }
 
 class newsPost {
 public:
@@ -71,13 +73,13 @@ public:
     umbraConfig(QString, QString, QString, QString, QString);
 };
 
-class meshh : public QMainWindow
+class umbra : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit meshh(QWidget *parent = 0);
-    ~meshh();
+    explicit umbra(QWidget *parent = 0);
+    ~umbra();
     umbraConfig ReadConfig();
     void recvPost(newsPost postdata);
     void hiFriends();
@@ -124,6 +126,9 @@ private slots:
     void askDuke(QString uname);
     void askDuke();
     void openSearchBox();
+    void promptLogin();
+    void dukeLogin();
+    void dukeRegister();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -141,10 +146,12 @@ protected:
     }
 
 private:
-    Ui::meshh   *ui;
+    Ui::umbra   *ui;
     messenger    m;
     settings     s;
     profile      p;
+    loginPrompt  lp;
+    dukeSettings ds;
     QByteArray  *tcpData;
     QUdpSocket  *udpSocket;
     QTcpSocket  *tcpSocket;
@@ -157,6 +164,7 @@ private:
     QString      pndfrnd;
     profileInfo *myInfo;
     QString      curfriend;
+    QCryptographicHash* hash;
 
     std::vector<newsPost>     *posts;
     std::vector<friendInfo>   *friends;
@@ -166,4 +174,4 @@ private:
     std::vector<QHostAddress> *conversessions;
 };
 
-#endif // MESHH_H
+#endif // umbra_H

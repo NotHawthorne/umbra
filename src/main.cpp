@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    meshh w;
+    umbra w;
     w.move(QApplication::desktop()->screen()->rect().center() - w.rect().center());
     w.show();
 

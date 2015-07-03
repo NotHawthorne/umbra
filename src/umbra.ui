@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>meshh</class>
- <widget class="QMainWindow" name="meshh">
+ <class>umbra</class>
+ <widget class="QMainWindow" name="umbra">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -431,7 +431,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>meshh - Stream</string>
+   <string>umbra - Stream</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -1939,7 +1939,7 @@ h3 {
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuMeshh">
+   <widget class="QMenu" name="menuumbra">
     <property name="title">
      <string>File</string>
     </property>
@@ -1961,7 +1961,7 @@ h3 {
     <addaction name="actionEdit"/>
     <addaction name="actionPrivacy"/>
    </widget>
-   <addaction name="menuMeshh"/>
+   <addaction name="menuumbra"/>
    <addaction name="menuView"/>
    <addaction name="menuProfile"/>
   </widget>

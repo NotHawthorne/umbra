@@ -54,6 +54,7 @@ umbraConfig::umbraConfig() {
     privacyLevel= NULL;
     themeColor  = "";
     debug = false;
+    indexName = "";
 }
 
 umbraConfig::umbraConfig(QString uname, QString path, QString prt, QString privlvl, QString color) {
@@ -63,6 +64,7 @@ umbraConfig::umbraConfig(QString uname, QString path, QString prt, QString privl
     privacyLevel= privlvl.toUInt();
     themeColor  = color;
     debug = false;
+    indexName = "";
 }
 
 profileInfo::profileInfo() {
