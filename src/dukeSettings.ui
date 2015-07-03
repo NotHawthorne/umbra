@@ -66,10 +66,10 @@
      </rect>
     </property>
     <property name="echoMode">
-     <enum>QLineEdit::Password</enum>
+     <enum>QLineEdit::Normal</enum>
     </property>
     <property name="placeholderText">
-     <string>new passkey             </string>
+     <string>new @umbranet address</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_2">
@@ -85,7 +85,7 @@
      <enum>QLineEdit::Password</enum>
     </property>
     <property name="placeholderText">
-     <string>new passkey (confirm)</string>
+     <string>new passkey</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_3">

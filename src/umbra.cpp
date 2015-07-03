@@ -88,6 +88,7 @@ umbra::umbra(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     connect(ui->settingsButton, SIGNAL(clicked()), this, SLOT(openSettings()));
     connect(ui->searchEnterButton, SIGNAL(clicked()), this, SLOT(askDuke()));
     connect(ui->searchButton, SIGNAL(clicked()), this, SLOT(openSearchBox()));
+    connect(this->ds.ui->pushButton_2, SIGNAL(clicked()), this, SLOT(dukeSave()));
 
     QSignalMapper *signalMapper = new QSignalMapper(this);
     signalMapper->setMapping(ui->profileButton, QString(this->conf->displayName));
@@ -325,6 +326,7 @@ void umbra::processPendingDatagrams()
             this->alert(recv.section(":", 1, 1), "red");
         }
         if (recv.section(":", 0, 0) == "0x10") {
+            this->dukekey = recv.section(":", 1, 1);
             this->ds.show();
         }
         if (recv.section(":", 0, 0) == "0x11") {
@@ -1054,6 +1056,23 @@ void umbra::dukeLogin() {
     data.append(out);
     udpSocket->writeDatagram(data.data(), data.size(), QHostAddress("umbraduke.ddns.net"), 1974);
     this->lp.hide();
+}
+
+void umbra::dukeSave() {
+    QString out("SAVE:");
+    QByteArray dgram;
+    out.append(this->conf->indexName);
+    out.append(":");
+    out.append(this->dukekey);
+    out.append(QString(":NEWADDR=" + this->ds.ui->lineEdit->text()));
+    out.append(QString(":NEWPASS=" + this->ds.ui->lineEdit_2->text()));
+    if (this->ds.ui->radioButton->isChecked())
+        out.append(":SYNC");
+    if (this->ds.ui->radioButton_2->isChecked())
+        out.append(":DELETE");
+
+    dgram.append(out);
+    udpSocket->writeDatagram(dgram.data(), dgram.size(), QHostAddress("umbraduke.ddns.net"), 1974);
 }
 
 void umbra::openProfile(QString uname) {

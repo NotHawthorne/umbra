@@ -129,6 +129,7 @@ private slots:
     void promptLogin();
     void dukeLogin();
     void dukeRegister();
+    void dukeSave();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -165,6 +166,7 @@ private:
     profileInfo *myInfo;
     QString      curfriend;
     QCryptographicHash* hash;
+    QString      dukekey;
 
     std::vector<newsPost>     *posts;
     std::vector<friendInfo>   *friends;
