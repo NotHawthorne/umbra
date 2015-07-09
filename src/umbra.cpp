@@ -33,6 +33,12 @@ umbra::umbra(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     this->conf->listenPort = tmpconf.listenPort;
     this->conf->themeColor = tmpconf.themeColor;
     this->conf->indexName = tmpconf.indexName;
+    this->conf->dukeip = tmpconf.dukeip;
+    this->conf->build = "0014";
+
+    QNetworkAccessManager *my_nam = new QNetworkAccessManager(this);
+    QObject::connect(my_nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(manage_network_reply(QNetworkReply*)));
+    my_nam->get(QNetworkRequest(QUrl("http://umbra.ddns.net/patcher/buildver.shh")));
 
     updateColor();
 
@@ -399,14 +405,14 @@ void umbra::askDuke(QString uname) {
     QByteArray out;
     out.append("REQ:");
     out.append(uname);
-    udpSocket->writeDatagram(out.data(), out.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    udpSocket->writeDatagram(out.data(), out.size(), QHostAddress(this->conf->dukeip), 1974);
 }
 
 void umbra::askDuke() {
     QByteArray out;
     out.append("REQ:");
     out.append(ui->searchBox->text());
-    udpSocket->writeDatagram(out.data(), out.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    udpSocket->writeDatagram(out.data(), out.size(), QHostAddress(this->conf->dukeip), 1974);
 }
 
 void umbra::requestProfile(QString uname) {
@@ -694,8 +700,18 @@ void umbra::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
+void umbra::manage_network_reply(QNetworkReply* net_reply) {
+    QString net_raw_result((QByteArray)(net_reply->readAll()));
+    if (net_raw_result.toUInt() == this->conf->build.toUInt()) {
+        this->alert("Your client is up to date.", "green");
+    } else {
+        this->alert(QString("Client outdated: "+net_raw_result), "red");
+    }
+}
+
 umbraConfig umbra::ReadConfig() {
     umbraConfig *out = new umbraConfig();
+
     std::string line;
     std::string pth = "shhdir/conf.shh";
     std::ifstream myfile (pth.c_str());
@@ -722,6 +738,9 @@ umbraConfig umbra::ReadConfig() {
                 if (s0.section("=", 1, 1) == "^^vv<><>AB$") { out->debug = true; }
             }
             else if (s0.section("=", 0, 0).toStdString() == "indexname") {
+                out->indexName = s0.section("=", 1, 1);
+            }
+            else if (s0.section("=", 0, 0).toStdString() == "dukeip") {
                 out->indexName = s0.section("=", 1, 1);
             }
         }
@@ -1039,7 +1058,7 @@ void umbra::dukeRegister() {
     out.append(hashResult);
     QByteArray dgram;
     dgram.append(out);
-    udpSocket->writeDatagram(dgram.data(), dgram.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    udpSocket->writeDatagram(dgram.data(), dgram.size(), QHostAddress(this->conf->dukeip), 1974);
     this->lp.hide();
 }
 
@@ -1048,7 +1067,6 @@ void umbra::dukeLogin() {
     out.append("LOGIN:");
     out.append(this->conf->indexName);
     out.append(":");
-
     QCA::init();
     QCA::Hash hash("sha256");
     hash.update(this->lp.ui->lineEdit->text().toStdString().c_str());
@@ -1056,7 +1074,7 @@ void umbra::dukeLogin() {
     out.append(hashResult);
     QByteArray data;
     data.append(out);
-    udpSocket->writeDatagram(data.data(), data.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    udpSocket->writeDatagram(data.data(), data.size(), QHostAddress(this->conf->dukeip), 1974);
     this->lp.hide();
 }
 
@@ -1074,7 +1092,7 @@ void umbra::dukeSave() {
         out.append(":DELETE");
 
     dgram.append(out);
-    udpSocket->writeDatagram(dgram.data(), dgram.size(), QHostAddress("umbraduke.ddns.net"), 1974);
+    udpSocket->writeDatagram(dgram.data(), dgram.size(), QHostAddress(this->conf->dukeip), 1974);
 }
 
 void umbra::openProfile(QString uname) {

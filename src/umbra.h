@@ -63,7 +63,7 @@ public:
 
 class umbraConfig {
 public:
-    QString displayName, displayImg, themeColor, indexName;
+    QString displayName, displayImg, themeColor, indexName, dukeip, build;
     quint16 listenPort;
     int privacyLevel;
     bool debug;
@@ -130,6 +130,7 @@ private slots:
     void dukeLogin();
     void dukeRegister();
     void dukeSave();
+    void manage_network_reply(QNetworkReply* net_reply);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;

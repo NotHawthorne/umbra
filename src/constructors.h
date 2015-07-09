@@ -55,6 +55,8 @@ umbraConfig::umbraConfig() {
     themeColor  = "";
     debug = false;
     indexName = "";
+    dukeip = "";
+    build = "";
 }
 
 umbraConfig::umbraConfig(QString uname, QString path, QString prt, QString privlvl, QString color) {
@@ -65,6 +67,8 @@ umbraConfig::umbraConfig(QString uname, QString path, QString prt, QString privl
     themeColor  = color;
     debug = false;
     indexName = "";
+    dukeip = "";
+    build = "";
 }
 
 profileInfo::profileInfo() {
