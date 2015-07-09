@@ -4,7 +4,8 @@
 #include <QtMultimedia/QSoundEffect>
 #include <QSignalMapper>
 #include <utility>
-
+#include "uError.h"
+#include "ui_uError.h"
 #include "dukeSettings.h"
 #include "ui_dukeSettings.h"
 #include "loginPrompt.h"
@@ -34,11 +35,11 @@ umbra::umbra(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     this->conf->themeColor = tmpconf.themeColor;
     this->conf->indexName = tmpconf.indexName;
     this->conf->dukeip = tmpconf.dukeip;
-    this->conf->build = "0014";
+    this->conf->build = "0015";
 
-    QNetworkAccessManager *my_nam = new QNetworkAccessManager(this);
-    QObject::connect(my_nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(manage_network_reply(QNetworkReply*)));
-    my_nam->get(QNetworkRequest(QUrl("http://umbra.ddns.net/patcher/buildver.shh")));
+    QNetworkAccessManager *webmgr = new QNetworkAccessManager(this);
+    QObject::connect(webmgr, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleBuildNumber(QNetworkReply*)));
+    webmgr->get(QNetworkRequest(QUrl("http://umbra.ddns.net/patcher/buildver.shh")));
 
     updateColor();
 
@@ -135,6 +136,13 @@ void umbra::end() {
         dir.remove(dirFile);
     }
     exit(0);
+}
+
+void umbra::error(QString msg) {
+    this->ue.ui->textBrowser->insertPlainText(msg);
+    this->ue.show();
+    this->hide();
+    connect(this->ue.ui->buttonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), this, SLOT(end()));
 }
 
 void umbra::processPendingDatagrams()
@@ -700,18 +708,17 @@ void umbra::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-void umbra::manage_network_reply(QNetworkReply* net_reply) {
-    QString net_raw_result((QByteArray)(net_reply->readAll()));
-    if (net_raw_result.toUInt() == this->conf->build.toUInt()) {
+void umbra::handleBuildNumber(QNetworkReply* buildReply) {
+    QString buildNumber((QByteArray)(buildReply->readAll()));
+    if (buildNumber.toUInt() == this->conf->build.toUInt()) {
         this->alert("Your client is up to date.", "green");
     } else {
-        this->alert(QString("Client outdated: "+net_raw_result), "red");
+        this->error("Client out of date. Please visit http://umbra.ddns.net/ for the latest binaries or build from source.");
     }
 }
 
 umbraConfig umbra::ReadConfig() {
     umbraConfig *out = new umbraConfig();
-
     std::string line;
     std::string pth = "shhdir/conf.shh";
     std::ifstream myfile (pth.c_str());

@@ -28,6 +28,12 @@ CONFIG(debug, debug|release) {
         OBJECTS_DIR = ../bin/src
         MOC_DIR = ../bin/src
 }
+CONFIG(release, debug|release) {
+        TARGET = umbra
+        DESTDIR = ../release
+        OBJECTS_DIR = ../release/src
+        MOC_DIR = ../release/src
+}
 
 SOURCES += src/main.cpp\
     cryptocpp/validat1.cpp \
@@ -168,7 +174,8 @@ SOURCES += src/main.cpp\
     src/settings.cpp \
     src/profile.cpp \
     src/loginPrompt.cpp \
-    src/dukeSettings.cpp
+    src/dukeSettings.cpp \
+    src/uError.cpp
 
 HEADERS  += \
     src/crypto.h \
@@ -314,7 +321,8 @@ HEADERS  += \
     src/constructors.h \
     src/profile.h \
     src/loginPrompt.h \
-    src/dukeSettings.h
+    src/dukeSettings.h \
+    src/uError.h
 
 FORMS    += \
     src/messenger.ui \
@@ -322,7 +330,8 @@ FORMS    += \
     src/settings.ui \
     src/profile.ui \
     src/loginPrompt.ui \
-    src/dukeSettings.ui
+    src/dukeSettings.ui \
+    src/uError.ui
 
 RESOURCES +=
 

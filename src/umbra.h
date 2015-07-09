@@ -16,6 +16,7 @@
 #include "profile.h"
 #include "loginPrompt.h"
 #include "dukeSettings.h"
+#include "uError.h"
 
 class QUdpSocket;
 
@@ -130,7 +131,8 @@ private slots:
     void dukeLogin();
     void dukeRegister();
     void dukeSave();
-    void manage_network_reply(QNetworkReply* net_reply);
+    void handleBuildNumber(QNetworkReply* buildReply);
+    void error(QString msg);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -154,6 +156,7 @@ private:
     profile      p;
     loginPrompt  lp;
     dukeSettings ds;
+    uError       ue;
     QByteArray  *tcpData;
     QUdpSocket  *udpSocket;
     QTcpSocket  *tcpSocket;
