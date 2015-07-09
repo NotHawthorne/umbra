@@ -1,0 +1,226 @@
+/****************************************************************************
+** Meta object code from reading C++ file 'keyloader.cpp'
+**
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.2.1)
+**
+** WARNING! All changes made in this file will be lost!
+*****************************************************************************/
+
+#include <QtCore/qbytearray.h>
+#include <QtCore/qmetatype.h>
+#if !defined(Q_MOC_OUTPUT_REVISION)
+#error "The header file 'keyloader.cpp' doesn't include <QObject>."
+#elif Q_MOC_OUTPUT_REVISION != 67
+#error "This file was generated using the moc from 5.2.1. It"
+#error "cannot be used with the include files from this version of Qt."
+#error "(The moc has changed too much.)"
+#endif
+
+QT_BEGIN_MOC_NAMESPACE
+struct qt_meta_stringdata_PassphraseHandler_t {
+    QByteArrayData data[6];
+    char stringdata[54];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_PassphraseHandler_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_PassphraseHandler_t qt_meta_stringdata_PassphraseHandler = {
+    {
+QT_MOC_LITERAL(0, 0, 17),
+QT_MOC_LITERAL(1, 18, 13),
+QT_MOC_LITERAL(2, 32, 0),
+QT_MOC_LITERAL(3, 33, 2),
+QT_MOC_LITERAL(4, 36, 10),
+QT_MOC_LITERAL(5, 47, 5)
+    },
+    "PassphraseHandler\0eh_eventReady\0\0id\0"
+    "QCA::Event\0event\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_PassphraseHandler[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       1,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    2,   19,    2, 0x08,
+
+ // slots: parameters
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 4,    3,    5,
+
+       0        // eod
+};
+
+void PassphraseHandler::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        PassphraseHandler *_t = static_cast<PassphraseHandler *>(_o);
+        switch (_id) {
+        case 0: _t->eh_eventReady((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< const QCA::Event(*)>(_a[2]))); break;
+        default: ;
+        }
+    }
+}
+
+const QMetaObject PassphraseHandler::staticMetaObject = {
+    { &QObject::staticMetaObject, qt_meta_stringdata_PassphraseHandler.data,
+      qt_meta_data_PassphraseHandler,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *PassphraseHandler::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *PassphraseHandler::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_PassphraseHandler.stringdata))
+        return static_cast<void*>(const_cast< PassphraseHandler*>(this));
+    return QObject::qt_metacast(_clname);
+}
+
+int PassphraseHandler::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 1)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 1;
+    }
+    return _id;
+}
+struct qt_meta_stringdata_App_t {
+    QByteArrayData data[5];
+    char stringdata[29];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_App_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_App_t qt_meta_stringdata_App = {
+    {
+QT_MOC_LITERAL(0, 0, 3),
+QT_MOC_LITERAL(1, 4, 4),
+QT_MOC_LITERAL(2, 9, 0),
+QT_MOC_LITERAL(3, 10, 5),
+QT_MOC_LITERAL(4, 16, 11)
+    },
+    "App\0quit\0\0start\0kl_finished\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_App[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       3,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       1,       // signalCount
+
+ // signals: name, argc, parameters, tag, flags
+       1,    0,   29,    2, 0x06,
+
+ // slots: name, argc, parameters, tag, flags
+       3,    0,   30,    2, 0x0a,
+       4,    0,   31,    2, 0x08,
+
+ // signals: parameters
+    QMetaType::Void,
+
+ // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void App::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        App *_t = static_cast<App *>(_o);
+        switch (_id) {
+        case 0: _t->quit(); break;
+        case 1: _t->start(); break;
+        case 2: _t->kl_finished(); break;
+        default: ;
+        }
+    } else if (_c == QMetaObject::IndexOfMethod) {
+        int *result = reinterpret_cast<int *>(_a[0]);
+        void **func = reinterpret_cast<void **>(_a[1]);
+        {
+            typedef void (App::*_t)();
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&App::quit)) {
+                *result = 0;
+            }
+        }
+    }
+    Q_UNUSED(_a);
+}
+
+const QMetaObject App::staticMetaObject = {
+    { &QObject::staticMetaObject, qt_meta_stringdata_App.data,
+      qt_meta_data_App,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *App::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *App::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_App.stringdata))
+        return static_cast<void*>(const_cast< App*>(this));
+    return QObject::qt_metacast(_clname);
+}
+
+int App::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QObject::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 3)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 3;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 3)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 3;
+    }
+    return _id;
+}
+
+// SIGNAL 0
+void App::quit()
+{
+    QMetaObject::activate(this, &staticMetaObject, 0, 0);
+}
+QT_END_MOC_NAMESPACE

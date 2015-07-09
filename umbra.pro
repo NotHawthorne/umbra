@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+QT_VERSION = 5
+
 QT       += widgets
 QT       += multimedia
 QT       += core gui
@@ -12,8 +14,8 @@ CONFIG   += openssl
 CONFIG   += c++11
 CONFIG   += static
 CONFIG   += crypto
-INCLUDEPATH += /home/nothawthorne/Projects/qca-2.1.0/include/QtCrypto
-LIBS += -L/home/nothawthorne/Projects/qca-2.1.0/lib/qca/crypto -lqca
+INCLUDEPATH += /home/nothawthorne/Projects/umbra/src/qca/include/QtCrypto
+LIBS += -L/home/nothawthorne/Projects/umbra/src/qca/lib -lqca
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

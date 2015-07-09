@@ -37,7 +37,7 @@ class friendInfo {
 public:
     QString username, publickey;
     QHostAddress IP;
-    qint16 portnum;
+    quint16 portnum;
     bool online;
     std::vector<QString> *msgs;
 
@@ -64,7 +64,7 @@ public:
 class umbraConfig {
 public:
     QString displayName, displayImg, themeColor, indexName;
-    qint16 listenPort;
+    quint16 listenPort;
     int privacyLevel;
     bool debug;
 

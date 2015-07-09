@@ -35,6 +35,7 @@ umbra::umbra(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
     this->conf->indexName = tmpconf.indexName;
 
     updateColor();
+
     this->loadMyProfile();
 
     this->posts = new std::vector<newsPost>;
@@ -61,7 +62,7 @@ umbra::umbra(QWidget *parent) : QMainWindow(parent, Qt::FramelessWindowHint), ui
 
     ui->displayname->setText(this->conf->displayName);
     ui->displayname->setMinimumWidth(this->conf->displayName.length() * 9);
-    ui->displayname->setToolTip("<img src='shhdir/images/pepe.jpg' width='256' height='256'>");
+    //ui->displayname->setToolTip("<img src='shhdir/images/pepe.jpg' width='256' height='256'>");
     ui->postFrame->hide();
     ui->friendsFrame->hide();
     ui->addFriendFrame->hide();
@@ -1047,6 +1048,7 @@ void umbra::dukeLogin() {
     out.append("LOGIN:");
     out.append(this->conf->indexName);
     out.append(":");
+
     QCA::init();
     QCA::Hash hash("sha256");
     hash.update(this->lp.ui->lineEdit->text().toStdString().c_str());
